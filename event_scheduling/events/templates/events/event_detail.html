@@ -1,0 +1,127 @@
+<!-- templates/events/event_detail.html -->
+{% extends "events/base.html" %}
+
+{% block title %}{{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1>{{ event.title }}</h1>
+        <p class="badge bg-info text-dark">{{ event.category.name }}</p>
+        
+        {% if event.organizer == user %}
+            <div class="mb-3">
+                <a href="{% url 'edit_event' event.id %}" class="btn btn-warning btn-sm">
+                    <i class="fas fa-edit"></i> Edit Event
+                </a>
+                <a href="{% url 'manage_event' event.id %}" class="btn btn-info btn-sm">
+                    <i class="fas fa-users-cog"></i> Manage Registrations
+                </a>
+            </div>
+        {% endif %}
+        
+        <div class="card mb-4">
+            {% if event.image %}
+                <img src="{{ event.image.url }}" class="card-img-top" alt="{{ event.title }}">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">Event Details</h5>
+                <p class="card-text">{{ event.description|linebreaks }}</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-calendar-alt me-2"></i>Date & Time</h6>
+                        <p>
+                            Starts: {{ event.start_date|date:"F d, Y - g:i A" }}<br>
+                            Ends: {{ event.end_date|date:"F d, Y - g:i A" }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-map-marker-alt me-2"></i>Location</h6>
+                        <p>{{ event.location }}</p>
+                    </div>
+                </div>
+                
+                <div class="mt-2">
+                    <h6><i class="fas fa-user me-2"></i>Organizer</h6>
+                    <p>{{ event.organizer.get_full_name|default:event.organizer.username }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                Registration
+            </div>
+            <div class="card-body">
+                {% if event.is_past %}
+                    <div class="alert alert-secondary">
+                        This event has already ended.
+                    </div>
+                {% elif user_registered %}
+                    <div class="alert alert-success">
+                        You are registered for this event.
+                        <p class="mt-2 mb-0">Status: <strong>{{ registration_status|title }}</strong></p>
+                    </div>
+                    {% if registration_status != 'cancelled' %}
+                        <a href="{% url 'cancel_registration' event.id %}" class="btn btn-danger btn-block">
+                            Cancel Registration
+                        </a>
+                    {% endif %}
+                {% elif event.is_full %}
+                    <div class="alert alert-warning">
+                        This event is at full capacity. No more registrations can be accepted.
+                    </div>
+                {% elif user.is_authenticated %}
+                    <a href="{% url 'register_for_event' event.id %}" class="btn btn-success btn-lg d-block">
+                        Register Now
+                    </a>
+                {% else %}
+                    <p>Please log in to register for this event.</p>
+                    <a href="{% url 'login' %}?next={% url 'event_detail' event.id %}" class="btn btn-primary d-block">
+                        Log In
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                Event Information
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <i class="fas fa-users me-2"></i>
+                    {% if event.capacity > 0 %}
+                        Capacity: {{ event.registrations.count }} / {{ event.capacity }}
+                        {% if not event.is_full %}
+                            ({{ event.available_seats }} spots left)
+                        {% else %}
+                            (Fully booked)
+                        {% endif %}
+                    {% else %}
+                        Unlimited Capacity
+                    {% endif %}
+                </li>
+                <li class="list-group-item">
+                    <i class="fas fa-clock me-2"></i>
+                    Created: {{ event.created_at|date:"M d, Y" }}
+                </li>
+                {% if event.is_published %}
+                    <li class="list-group-item">
+                        <i class="fas fa-check-circle me-2 text-success"></i>
+                        Published
+                    </li>
+                {% else %}
+                    <li class="list-group-item">
+                        <i class="fas fa-exclamation-circle me-2 text-warning"></i>
+                        Draft (not publicly visible)
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

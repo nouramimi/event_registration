@@ -1,0 +1,37 @@
+{% extends "events/base.html" %}
+
+{% block title %}Log In{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0">Log In</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" id="id_username" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_password" class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" id="id_password" required>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Log In</button>
+                </form>
+                <div class="border-top pt-3 mt-4">
+                    <small class="text-muted">
+                        Need an account? <a href="{% url 'register' %}" class="ms-2">Sign Up Now</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

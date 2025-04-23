@@ -1,0 +1,39 @@
+{% extends "events/base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0">Your Profile</h2>
+            </div>
+            <div class="card-body">
+                <div class="d-flex">
+                    <div class="ms-3">
+                        <h3>{{ user.username }}</h3>
+                        <p class="text-muted">{{ user.email }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                Quick Links
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="{% url 'my_events' %}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-calendar me-2"></i> My Events
+                </a>
+                <a href="{% url 'create_event' %}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-plus me-2"></i> Create New Event
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

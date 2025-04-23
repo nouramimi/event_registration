@@ -1,0 +1,135 @@
+{% extends "events/base.html" %}
+
+{% block title %}Browse Events{% endblock %}
+
+{% block content %}
+<h1>Browse Events</h1>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <form method="get" class="d-flex">
+            <input type="text" name="q" class="form-control me-2" placeholder="Search events..." value="{{ query|default:'' }}">
+            {% if selected_category %}
+                <input type="hidden" name="category" value="{{ selected_category }}">
+            {% endif %}
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    </div>
+    <div class="col-md-4">
+        <select class="form-select" id="categoryFilter">
+            <option value="">All Categories</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}" {% if selected_category|add:0 == category.id %}selected{% endif %}>
+                    {{ category.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+<div class="row">
+    {% for event in page_obj %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        {% if event.image %}
+                            <img src="{{ event.image.url }}" class="img-fluid rounded-start h-100" alt="{{ event.title }}">
+                        {% else %}
+                            <div class="bg-secondary text-white text-center h-100 d-flex align-items-center justify-content-center">
+                                <i class="fas fa-calendar fa-3x"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ event.title }}</h5>
+                            <p class="card-text">
+                                <span class="badge bg-info text-dark">{{ event.category.name }}</span>
+                            </p>
+                            <p class="card-text">
+                                <i class="fas fa-calendar-alt me-1"></i> {{ event.start_date|date:"M d, Y - g:i A" }}
+                                <br>
+                                <i class="fas fa-map-marker-alt me-1"></i> {{ event.location }}
+                                <br>
+                                {% if event.is_full %}
+                                    <span class="badge bg-danger">Fully Booked</span>
+                                {% elif event.capacity > 0 %}
+                                    <span class="badge bg-success">{{ event.available_seats }} spots left</span>
+                                {% endif %}
+                            </p>
+                            <a href="{% url 'event_detail' event.id %}" class="btn btn-sm btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                No events found matching your criteria.
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Previous</a>
+            </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Last</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+
+{% block extra_js %}
+<script>
+    document.getElementById('categoryFilter').addEventListener('change', function() {
+        const categoryId = this.value;
+        let url = new URL(window.location);
+        
+        if (categoryId) {
+            url.searchParams.set('category', categoryId);
+        } else {
+            url.searchParams.delete('category');
+        }
+        
+        // Preserve search query if present
+        const query = '{{ query|escapejs }}';
+        if (query) {
+            url.searchParams.set('q', query);
+        }
+        
+        // Reset to first page when changing filters
+        url.searchParams.delete('page');
+        
+        window.location = url.toString();
+    });
+</script>
+{% endblock %}
+{% endblock %}
